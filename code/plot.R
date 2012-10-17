@@ -143,11 +143,47 @@ trips.alone$speed <-
 mean(trips.together$speed, trim=0.10, na.rm=TRUE)
 mean(trips.alone$speed, trim=0.10, na.rm=TRUE)
 
+## Plot the speed
+df.speed <- data.frame(c(rep("together", nrow(trips.together)),
+                         rep("alone", nrow(trips.alone))),
+                       c(trips.together$speed, trips.alone$speed)
+                       )
+names(df.speed) <- c("group", "speed")
+levels(df.speed$group) <- c("Trips alone", "Trips together")
+
+plot.speed <- ggplot(df.speed,
+                     aes(x=speed,
+                         colour=group
+                         )
+                     ) +
+  geom_density(size=2) +
+  scale_x_continuous("Speed (km/h)",
+                     limits=c(0,20)
+                     ) +
+  scale_y_continuous("Proportion of trips at speed") +
+  scale_colour_discrete("Trip Group")
+print(plot.speed)
+
+
 ## Tabulate gender and subscription type
-together.gender <- table(trips.together$gender1, trips.together$gender2)
+together.gender <- prop.table(table(trips.together$gender1,
+                                    trips.together$gender2
+                                    )
+                              )
 together.sub <- table(trips.together$sub1,
                       trips.together$sub2
                       )
+
+## Sample random genders and see what we get
+random.gender.pairs <- matrix(ncol=2,
+                              sample(trips.alone$gender,
+                                     5000,
+                                     replace=FALSE)
+                              )
+prop.table(table(random.gender.pairs[,1],
+                 random.gender.pairs[,2]
+                 )
+           )
 
 ## Compute age differences and mean ages
 together.mean.age <- mean(c(trips.together$age1, trips.together$age2),
@@ -245,7 +281,7 @@ time.df <- rbind(together.time.df, alone.time.df)
 time.df <- melt(time.df, id.var="group")
 
 levels(time.df$variable) <- c("Arrival Time", "Departure Time")
-levels(time.df$group) <- c("Paired Trips", "All Trips")
+levels(time.df$group) <- c("Trips together", "Trips alone")
 
 time.df$weekday <- weekdays(time.df$value)
 time.df$weekday <- factor(time.df$weekday,

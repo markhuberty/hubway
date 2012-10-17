@@ -10,4 +10,4 @@ More information on the Hubway data can be found at their [Data Visualization Ch
 License
 ----------------------
 
-All code is published under the Gnu Public License. Data are governed by the Hubway Data Visualization Challenge rules and regulations. 
+All code is published under the [GNU Public License v2](http://www.gnu.org/licenses/gpl-2.0.html). Data are governed by the Hubway Data Visualization Challenge rules and regulations. 

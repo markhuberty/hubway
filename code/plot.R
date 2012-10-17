@@ -333,12 +333,22 @@ plot.times <- ggplot(time.df,
                          )
                      ) +
   geom_density(size=2) +
-  scale_x_continuous("Hour", limits=c(0,24)) +
-  scale_y_continuous("Trip Frequency") +
+  scale_x_continuous(limits=c(0,24),
+                     breaks=c(6,12,18),
+                     labels=c("6 AM", "Noon", "6 PM")
+                     ) +
+  xlab("") +
+  ylab("Trip Frequency") +
   opts(axis.text.x=theme_text(angle=90, hjust=0)) +
-  scale_colour_discrete("Trip Group") +
+  scale_colour_manual("Trip Group", values=c("black", "white")) +
   facet_wrap(~ variable) +
-  opts(panel.background=theme_rect(fill="transparent", colour=NA),
+  opts(strip.text.x=theme_text(size=14),
+       strip.text.y=theme_text(size=14),
+       scale.text.x=theme_text(size=14),
+       axis.text.y=theme_blank(),
+       axis.text.x=theme_text(size=14, colour="black"),
+       axis.title.y=theme_text(size=14),
+       panel.background=theme_rect(fill="transparent", colour=NA),
        panel.grid.minor=theme_blank(),
        panel.grid.major=theme_blank(),
        plot.background=theme_rect(fill="transparent", colour=NA)
@@ -355,8 +365,12 @@ plot.days <- ggplot(time.df[time.df$variable=="Arrival Time",],
   geom_histogram() +
   facet_grid(group ~ ., scales="free_y") +
   scale_y_continuous("Trip Count") +
-  scale_x_discrete("Day of the Week") +
-  opts(panel.background=theme_rect(fill="transparent", colour=NA),
+  scale_x_discrete("") +
+  opts(strip.text.x=theme_text(size=14),
+       strip.text.y=theme_text(size=14),
+       axis.text.y=theme_blank(),
+       axis.text.x=theme_text(size=14, colour="black"),
+       panel.background=theme_rect(fill="transparent", colour=NA),
        panel.grid.minor=theme_blank(),
        panel.grid.major=theme_blank(),
        plot.background=theme_rect(fill="transparent", colour=NA))
@@ -375,13 +389,20 @@ plot.time.days <- ggplot(time.df[time.df$variable=="Arrival Time",],
                          ) +
   geom_density(size=2) +
   facet_grid(. ~ weekday) +
-  scale_x_continuous("Departure Time") +
+  scale_x_continuous("Departure Time",
+                     breaks=c(12),
+                     labels=c("Noon")
+                     ) +
   scale_y_continuous("Trip Frequency") +
-  scale_colour_discrete("Trip Group") +
-  opts(panel.background=theme_rect(fill="transparent", colour=NA),
+  scale_colour_manual("Trip Group", values=c("black", "white")) +
+  theme_bw() +
+  opts(strip.text.x=theme_text(size=14),
+       axis.text.y=theme_blank(),
+       panel.background=theme_rect(fill="transparent", colour=NA),
        panel.grid.minor=theme_blank(),
        panel.grid.major=theme_blank(),
-       plot.background=theme_rect(fill="transparent", colour=NA))
+       plot.background=theme_rect(fill="transparent", colour=NA)
+       )
 ggsave(plot.time.days,
        file="./figures/plot.time.weekdays.pdf",
        bg="transparent"

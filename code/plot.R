@@ -254,6 +254,37 @@ alone.popular.start <- sort(table(trips.alone$start.station),
                             decreasing=TRUE
                             )[1:10]
 
+pairs.station.popularity <-
+  aggregate(rep(1, nrow(trips.together)),
+            by=list(trips.together$start.station.name,
+              trips.together$end.station.name),
+            FUN="sum"
+            )
+alone.station.popularity <-
+  aggregate(rep(1, nrow(trips.alone)),
+            by=list(trips.alone$start.station.name,
+              trips.alone$end.station.name),
+            FUN="sum"
+            )
+names(pairs.station.popularity) <-
+  names(alone.station.popularity)<-
+  c("start_station", "end_station", "trip_count")
+pairs.station.popularity$trip_count <-
+  pairs.station.popularity$trip_count /
+  min(pairs.station.popularity$trip_count)
+pairs.station.popularity$type <- "pair"
+alone.station.popularity$type <- "alone"
+alone.station.popularity$trip_count <-
+  alone.station.popularity$trip_count /
+  min(alone.station.popularity$trip_count)
+
+popularity.out <- rbind(pairs.station.popularity,
+                        alone.station.popularity
+                        )
+write.csv(popularity.out,
+          "./data/pairwise_station_popularity.csv",
+          row.names=FALSE
+          )
 
 ## When do they leave?
 ## Function
@@ -306,8 +337,16 @@ plot.times <- ggplot(time.df,
   scale_y_continuous("Trip Frequency") +
   opts(axis.text.x=theme_text(angle=90, hjust=0)) +
   scale_colour_discrete("Trip Group") +
-  facet_wrap(~ variable)
-ggsave(plot.times, file="./figures/plot.departure.arrival.times.pdf")
+  facet_wrap(~ variable) +
+  opts(panel.background=theme_rect(fill="transparent", colour=NA),
+       panel.grid.minor=theme_blank(),
+       panel.grid.major=theme_blank(),
+       plot.background=theme_rect(fill="transparent", colour=NA)
+       )
+ggsave(plot.times,
+       file="./figures/plot.departure.arrival.times.pdf",
+       bg="transparent"
+       )
 
 plot.days <- ggplot(time.df[time.df$variable=="Arrival Time",],
                     aes(x=weekday
@@ -316,7 +355,34 @@ plot.days <- ggplot(time.df[time.df$variable=="Arrival Time",],
   geom_histogram() +
   facet_grid(group ~ ., scales="free_y") +
   scale_y_continuous("Trip Count") +
-  scale_x_discrete("Day of the Week")
+  scale_x_discrete("Day of the Week") +
+  opts(panel.background=theme_rect(fill="transparent", colour=NA),
+       panel.grid.minor=theme_blank(),
+       panel.grid.major=theme_blank(),
+       plot.background=theme_rect(fill="transparent", colour=NA))
 ggsave(plot.days,
-       file="./figures/plot.trip.weekdays.pdf"
+       file="./figures/plot.trip.weekdays.pdf",
+       bg="transparent"
+       )
+
+
+## Leaving by day of week
+
+plot.time.days <- ggplot(time.df[time.df$variable=="Arrival Time",],
+                         aes(x=hourfun(value),
+                             colour=group
+                             )
+                         ) +
+  geom_density(size=2) +
+  facet_grid(. ~ weekday) +
+  scale_x_continuous("Departure Time") +
+  scale_y_continuous("Trip Frequency") +
+  scale_colour_discrete("Trip Group") +
+  opts(panel.background=theme_rect(fill="transparent", colour=NA),
+       panel.grid.minor=theme_blank(),
+       panel.grid.major=theme_blank(),
+       plot.background=theme_rect(fill="transparent", colour=NA))
+ggsave(plot.time.days,
+       file="./figures/plot.time.weekdays.pdf",
+       bg="transparent"
        )

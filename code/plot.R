@@ -281,6 +281,7 @@ alone.station.popularity$trip_count <-
 popularity.out <- rbind(pairs.station.popularity,
                         alone.station.popularity
                         )
+
 write.csv(popularity.out,
           "./data/pairwise_station_popularity.csv",
           row.names=FALSE

@@ -151,18 +151,22 @@ df.speed <- data.frame(c(rep("together", nrow(trips.together)),
 names(df.speed) <- c("group", "speed")
 levels(df.speed$group) <- c("Trips alone", "Trips together")
 
-plot.speed <- ggplot(df.speed,
+
+plot.speed <- ggplot(df.speed[df.speed$speed > 0,],
                      aes(x=speed,
                          colour=group
                          )
                      ) +
-  geom_density(size=2) +
+  geom_density() +
   scale_x_continuous("Speed (km/h)",
                      limits=c(0,20)
                      ) +
   scale_y_continuous("Proportion of trips at speed") +
-  scale_colour_discrete("Trip Group")
-print(plot.speed)
+  scale_colour_manual("Trip group", values=c("Trips alone" = "blue",
+                                      "Trips together" = "red")) +
+  theme_bw()
+ggsave(plot.speed, file="./figures/plot_trip_speed.pdf")
+
 
 
 ## Tabulate gender and subscription type
@@ -200,6 +204,25 @@ random.ages <- matrix(ncol=2, sample(trips.alone$birth_date,
                         replace=FALSE)
                       )
 random.agediff <- abs(random.ages[,1] - random.ages[,2])
+
+df.agediff <- rbind(cbind("together", together.age.diff),
+                    cbind("random", random.agediff)
+                    )
+df.agediff <- as.data.frame(df.agediff)
+names(df.agediff) <- c("trip.type", "age.diff")
+df.agediff$age.diff <- as.numeric(as.character(df.agediff$age.diff))
+levels(df.agediff$trip.type) <- c("Random pair", "Companions")
+
+plot.age.diff <- ggplot(df.agediff,
+                        aes(x=age.diff)
+                        ) +
+  geom_density() +
+  facet_wrap(~ trip.type) +
+  scale_x_continuous("Age difference (years)") +
+  scale_y_continuous("Trip frequency") +
+  theme_bw()
+ggsave(plot.age.diff, file="./figures/plot_age_diff.pdf")
+print(plot.age.diff)
 
 ## Test the agediff
 ## Note there's something a touch confounded here: if the age
@@ -333,30 +356,31 @@ plot.times <- ggplot(time.df,
                          colour=group
                          )
                      ) +
-  geom_density(size=2) +
+  geom_density() +
   scale_x_continuous(limits=c(0,24),
                      breaks=c(6,12,18),
                      labels=c("6 AM", "Noon", "6 PM")
                      ) +
   xlab("") +
   ylab("Trip Frequency") +
-  opts(axis.text.x=theme_text(angle=90, hjust=0)) +
-  scale_colour_manual("Trip Group", values=c("black", "white")) +
+  #opts(axis.text.x=theme_text(angle=90, hjust=0)) +
+  scale_colour_manual("Trip Group", values=c("red", "blue")) +
   facet_wrap(~ variable) +
-  opts(strip.text.x=theme_text(size=14),
-       strip.text.y=theme_text(size=14),
-       scale.text.x=theme_text(size=14),
-       axis.text.y=theme_blank(),
-       axis.text.x=theme_text(size=14, colour="black"),
-       axis.title.y=theme_text(size=14),
-       panel.background=theme_rect(fill="transparent", colour=NA),
-       panel.grid.minor=theme_blank(),
-       panel.grid.major=theme_blank(),
-       plot.background=theme_rect(fill="transparent", colour=NA)
-       )
+  theme_bw()##  +
+  ## opts(strip.text.x=theme_text(size=12),
+  ##      strip.text.y=theme_text(size=12),
+  ##      scale.text.x=theme_text(size=12),
+  ##      axis.text.y=theme_blank(),
+  ##      axis.text.x=theme_text(size=12, colour="black"),
+  ##      axis.title.y=theme_text(size=12),
+  ##      panel.background=theme_rect(fill="transparent", colour=NA),
+  ##      panel.grid.minor=theme_blank(),
+  ##      panel.grid.major=theme_blank(),
+  ##      plot.background=theme_rect(fill="transparent", colour=NA)
+  ##      )
 ggsave(plot.times,
-       file="./figures/plot.departure.arrival.times.pdf",
-       bg="transparent"
+       file="./figures/plot_departure_arrival_times.pdf"## ,
+       ## bg="transparent"
        )
 
 plot.days <- ggplot(time.df[time.df$variable=="Arrival Time",],
@@ -367,17 +391,18 @@ plot.days <- ggplot(time.df[time.df$variable=="Arrival Time",],
   facet_grid(group ~ ., scales="free_y") +
   scale_y_continuous("Trip Count") +
   scale_x_discrete("") +
-  opts(strip.text.x=theme_text(size=14),
-       strip.text.y=theme_text(size=14),
-       axis.text.y=theme_blank(),
-       axis.text.x=theme_text(size=14, colour="black"),
-       panel.background=theme_rect(fill="transparent", colour=NA),
-       panel.grid.minor=theme_blank(),
-       panel.grid.major=theme_blank(),
-       plot.background=theme_rect(fill="transparent", colour=NA))
+  theme_bw()
+  ## opts(strip.text.x=theme_text(size=14),
+  ##      strip.text.y=theme_text(size=14),
+  ##      axis.text.y=theme_blank(),
+  ##      axis.text.x=theme_text(size=14, colour="black"),
+  ##      panel.background=theme_rect(fill="transparent", colour=NA),
+  ##      panel.grid.minor=theme_blank(),
+  ##      panel.grid.major=theme_blank(),
+  ##      plot.background=theme_rect(fill="transparent", colour=NA))
 ggsave(plot.days,
-       file="./figures/plot.trip.weekdays.pdf",
-       bg="transparent"
+       file="./figures/plot_trip_weekdays.pdf"## ,
+       ## bg="transparent"
        )
 
 
@@ -388,23 +413,23 @@ plot.time.days <- ggplot(time.df[time.df$variable=="Arrival Time",],
                              colour=group
                              )
                          ) +
-  geom_density(size=2) +
+  geom_density() +
   facet_grid(. ~ weekday) +
   scale_x_continuous("Departure Time",
                      breaks=c(12),
                      labels=c("Noon")
                      ) +
   scale_y_continuous("Trip Frequency") +
-  scale_colour_manual("Trip Group", values=c("black", "white")) +
-  theme_bw() +
-  opts(strip.text.x=theme_text(size=14),
-       axis.text.y=theme_blank(),
-       panel.background=theme_rect(fill="transparent", colour=NA),
-       panel.grid.minor=theme_blank(),
-       panel.grid.major=theme_blank(),
-       plot.background=theme_rect(fill="transparent", colour=NA)
-       )
+  scale_colour_manual("Trip Group", values=c("red", "blue")) +
+  theme_bw()##  +
+  ## opts(strip.text.x=theme_text(size=14),
+  ##      axis.text.y=theme_blank(),
+  ##      panel.background=theme_rect(fill="transparent", colour=NA),
+  ##      panel.grid.minor=theme_blank(),
+  ##      panel.grid.major=theme_blank(),
+  ##      plot.background=theme_rect(fill="transparent", colour=NA)
+  ##      )
 ggsave(plot.time.days,
-       file="./figures/plot.time.weekdays.pdf",
-       bg="transparent"
+       file="./figures/plot.time.weekdays.pdf"## ,
+       ## bg="transparent"
        )
